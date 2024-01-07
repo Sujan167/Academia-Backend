@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------------
+
+// College Management System
+// User(id,name,email,password,phoneNumber,gender,role)
+model User {
+  id           String       @id @default(cuid())
+  role         Role
+  name         String
+  email        String       @unique
+  gender       String
+  address      String
+  username     String //sujanbasnet2077@student.ambition.edu.np
+  password     String
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+  phoneNumber  String       @unique
+  dateOfBirth  DateTime
+  refreshToken String?
+  referenceKey String?
+  isVerified   Boolean      @default(false)
+  isSuspended  Boolean      @default(true)
+  // AvatarURL    String
+  Student      Student?
+  Staff        Staff?
+  Attendence   Attendence[]
+}
+
+// -------------------------------------------------------------------
+
+enum Role {
+  STAFF
+  ADMIN
+  STUDENT
+}
+
+// -------------------------------------------------------------------
+
+// Department(id, DepartmentName)
+model Department {
+  id             Int       @id @default(autoincrement())
+  departmentName String
+  subjects       Subject[]
+  students       Student[]
+}
+
+// -------------------------------------------------------------------
+
+// Semester(id, semesterName)
+model Semester {
+  id           Int       @id @default(autoincrement())
+  semesterName String
+  Subject      Subject[]
+  Student      Student[]
+}
+
+// -------------------------------------------------------------------
+
+//  Subject(id, subjectName,subjectCode,creditHour,semesterRefId,departmentRefId,isElective, staffRefId)
+model Subject {
+  id              Int              @id @default(autoincrement())
+  subjectName     String
+  subjectCode     String           @unique
+  semester        Semester         @relation(fields: [semesterRefId], references: [id])
+  semesterRefId   Int
+  isElective      Boolean
+  staff           Staff?           @relation(fields: [staffRefId], references: [staffId])
+  staffRefId      String?
+  departmentRefId Int
+  department      Department       @relation(fields: [departmentRefId], references: [id])
+  StudentSubject  StudentSubject[]
+  creditHour      Int
+}
+
+// -------------------------------------------------------------------
+
+// model to maintain many-to-many relationship betweeen Student and Subject
+model StudentSubject {
+  id           Int     @id @default(autoincrement())
+  studentRefId String
+  subjectRefId Int
+  subject      Subject @relation(fields: [subjectRefId], references: [id])
+  student      Student @relation(fields: [studentRefId], references: [studentId])
+  marks        Int?
+}
+
+// -------------------------------------------------------------------
+
+//  Student(id,semesterRefId,registratinoNumber,symbolNumber,subjectRefId,joinDate,departmentRefId)
+model Student {
+  studentId          String           @id @unique
+  user               User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  semester           Semester         @relation(fields: [semesterRefId], references: [id])
+  semesterRefId      Int              @default(0)
+  registrationNumber String?
+  symbolNumber       String?
+  joinDate           DateTime
+  departmentRefId    Int
+  department         Department       @relation(fields: [departmentRefId], references: [id])
+  StudentSubject     StudentSubject[]
+}
+
+// -------------------------------------------------------------------
+
+// Staff(id, subjectRefId,joinDate)
+model Staff {
+  staffId  String    @id @unique
+  user     User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  // joinDate DateTime
+  Subject  Subject[]
+}
+
+// -------------------------------------------------------------------
+//  Attendence(id, userRefId, date, presentCount)
+model Attendence {
+  id           Int      @id @default(autoincrement())
+  userRefId    String
+  user         User     @relation(fields: [userRefId], references: [id], onDelete: Cascade)
+  presentCount Int      @default(0)
+  presentDate  DateTime
+}

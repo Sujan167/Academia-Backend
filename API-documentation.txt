@@ -1,0 +1,90 @@
+UniMate - College Management System API documentation
+-----------------------------------------------------
+1. Auth 
+    - POST : /api/auth/login
+        body: email, role, password
+        
+    - POST : /api/auth/registration
+        body: name, phoneNumber, email, role, dateOfBirth, address, gender, joinDate
+        if role is student then also include departmentName and semesterName in body
+        (wait for admin to verify)
+    - /api/auth/forget-password
+            - GET: To generate OTP. OTP will be sent to user's mail
+            - POST : To verify OTP
+                    body: OTP
+                    (OTP will be sent to user's email)
+            - PATCH : To update password
+                    body: password        
+                
+    - /api/auth/set-new-password
+        - PATCH : to set new password for newly joined user
+            body: email, referenceKey, password
+======================================================================================        
+
+2. User 
+    ROLE: ADMIN
+    - /api/user/
+        - GET : Get all the users
+    - /api/user/:userId
+        - GET : Get user based on id
+        - PUT : Update users detail
+        - DELETE: Delete User from the system
+
+======================================================================================        
+
+3. Student
+    ROLE: ADMIN, STAFF, STUDENT
+    - api/student/
+        - GET: get all student
+    - /api/student/semester?semesterName=&departmentName=
+        - GET : get all student of same semester and department
+    - /api/student/:userId
+        - POST: to update student's semester on every semester change
+            body: departmentName, semesterName, symbolNumber(optional), registrationNumber(optional)
+
+======================================================================================        
+
+4. STAFF
+    ROLE: ADMIN, STAFF
+    - /api/staff/
+        - GET: to get all staff
+    - /api/staff/:userId
+        - GET: to get staff based on id
+        - PUT
+        - DELETE
+
+======================================================================================        
+
+5. SUBJECT
+    - /api/subject
+        GET: to get all the subjects of all semester from both department(BCA & CSIT)
+
+    - /api/subject?semesterName=fifth
+        semesterName should be one of them: first,second,third,fourth,fifth,sixth,seventh,eighth 
+        (not case sensetive)
+        
+        GET:to get all the subject of fifth semester
+    - /api/subject?departmentName=fifth
+        departmentName should be one of them: bca,csit (not case sensetive)
+
+    - /api/subject?semesterName=fifth&departmentName=csit
+        GET: to get all subjects of fifth semester of csit department
+
+======================================================================================        
+
+6. ADMIN
+    ROLE: ADMIN only
+    - /api/admin
+        GET: get all the admins
+    - /api/admin/:id
+        GET: get admin based on userId
+    - /api/admin/verify-new-registration
+        PATCH: to verify new registration based on userId
+        Body: id
+        (referenceKey will be sent to the email of user)
+    - /api/admin/suspend-user
+        PATCH: suspend any user based on userId
+        Body: id
+    - /api/admin/unsuspend-user
+        PATCH: unsuspend user based on userId
+        Body: id
