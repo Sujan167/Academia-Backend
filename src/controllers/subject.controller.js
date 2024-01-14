@@ -3,7 +3,6 @@ const { prisma, redisClient } = require("../utils");
 const asyncHandler = require("express-async-handler");
 const { REDIS_TTL } = process.env;
 const { getSemesterId, getDepartmentId } = require("./student.controller");
-
 // =======================================================================
 
 const getAllSubject = asyncHandler(async (req, res) => {
@@ -12,13 +11,13 @@ const getAllSubject = asyncHandler(async (req, res) => {
 	if (semesterName && !departmentName) {
 		const semesterRefId = await getSemesterId(semesterName);
 
-		const subjectOfSemesterOfAllDepartment = await prisma.subject.findMany({
+		const subject = await prisma.subject.findMany({
 			where: { semesterRefId },
 		});
-		// const totalRegularSubject = subjectOfSemesterOfAllDepartment.filter((item) => item.isElective === false).length;
-		// const data = { totalRegularSubject, subjectOfSemesterOfAllDepartment };
-		
-		const finalReply = { status: "Success", message: `All Subjects of ${semesterName} Semester`, data: subjectOfSemesterOfAllDepartment };
+		const totalRegularSubject = subject.filter((item) => item.isElective === false).length;
+		const data = { totalRegularSubject, subject };
+
+		const finalReply = { success: true, data: data };
 
 		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
@@ -31,7 +30,7 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		const subjectOfADepartment = await prisma.subject.findMany({
 			where: { departmentRefId },
 		});
-		const finalReply = { status: "Success", message: `All Subjects of ${departmentName} Department`, data: subjectOfADepartment };
+		const finalReply = { success: true, data: subjectOfADepartment };
 
 		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
@@ -42,17 +41,17 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		// If both semesterName and departmentName are present, execute another query
 		const semesterRefId = await getSemesterId(semesterName);
 		const departmentRefId = await getDepartmentId(departmentName);
-		// console.log(semesterRefId, departmentRefId);
-		const subjectOfSemesterOfDepartment = await prisma.subject.findMany({
+
+		const subjects = await prisma.subject.findMany({
 			where: {
 				semesterRefId,
 				departmentRefId,
 			},
 		});
-		// const totalRegularSubject = subjectOfSemesssterOfDepartment.filter((item) => item.isElective === false).length;
-		// const data = { totalRegularSubject, subjectOfSemesterOfDepartment };
+		const totalRegularSubject = subjects.filter((item) => item.isElective === false).length;
+		const data = { totalRegularSubject, subjects };
 
-		const finalReply = { status: "Success", message: `All Subjects of ${semesterName} Semester of ${departmentName} Department`, data: subjectOfSemesterOfDepartment };
+		const finalReply = { success: true, data: data };
 
 		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
@@ -62,7 +61,7 @@ const getAllSubject = asyncHandler(async (req, res) => {
 	} else {
 		// If neither semesterName nor departmentName are present, return all subjects
 		const allSubjects = await prisma.subject.findMany({});
-		const finalReply = { status: "Success", message: "All Subjects", data: allSubjects };
+		const finalReply = { success: true, data: allSubjects };
 
 		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 		res.status(200).json(finalReply);
@@ -75,7 +74,7 @@ const getSubject = asyncHandler(async (req, res) => {
 	const { semesterName } = req.query;
 
 	if (!semesterName) {
-		return res.status(404).json({ message: "semesterName and departmentName are required" });
+		return res.status(404).json({ status: "semesterName and departmentName are required" });
 	}
 
 	const semesterRefId = await getSemesterId(semesterName);
@@ -83,9 +82,9 @@ const getSubject = asyncHandler(async (req, res) => {
 	const semData = await prisma.subject.findMany({
 		where: { semesterRefId },
 	});
-	const data = { message: `Data of Semester: ${semesterName}👻👻👻`, semData };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	res.status(200).json(data);
+	const finalReply = { success: true, data:semData };
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	res.status(200).json(finalReply);
 });
 
 module.exports = { getAllSubject };

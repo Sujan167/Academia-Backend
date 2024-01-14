@@ -16,6 +16,7 @@ const authenticate = require("./src/middlewares/authenticate");
 const ErrorHandler = require("./src/errors/ErrorHandler");
 const cacheMiddleware = require("./src/middlewares/cache.middleware");
 const checkRole = require("./src/middlewares/checkRole.middleware");
+
 const app = express();
 
 // ======================================================
@@ -49,8 +50,10 @@ app.use(
 app.get("/", async (req, res, next) => {
 	res.json({ message: "Awesome it works 🐻" });
 });
+// app.use(formatResponseMiddleware);
 
 app.use("/api/v1/auth", require("./src/routes/auth.route"));
+
 app.use("/api/v1/subject", cacheMiddleware, require("./src/routes/subject.route"));
 
 app.use(authenticate); // need credintials for all the route below

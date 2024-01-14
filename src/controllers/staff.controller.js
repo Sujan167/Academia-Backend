@@ -7,7 +7,6 @@ const { REDIS_TTL } = process.env;
 
 // GET /api/staff
 const getAllStaff = asyncHandler(async (req, res) => {
-	const staffCount = await prisma.Staff.count();
 	const staffs = await prisma.Staff.findMany({
 		include: {
 			user: {
@@ -15,10 +14,12 @@ const getAllStaff = asyncHandler(async (req, res) => {
 			},
 		},
 	});
+	const totalStaff = staffs.filter((staff) => staff.length);
+	const data = { totalStaff, staffs };
+	const finalReply = { success: true, message: "Get All Staff", data: data };
 
-	const data = { message: "Get all staff 🚀", staffCount, staffs };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	return res.status(200).json(data);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	return res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -35,9 +36,10 @@ const getStaff = asyncHandler(async (req, res) => {
 	});
 	staff.user.password = undefined;
 	const data = { message: "Get a staff route 🚀", staff };
+	const finalReply = { success: true, message: "Get Staff based on ID", data: data };
 
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	res.status(200).json(data);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -45,7 +47,7 @@ const getStaff = asyncHandler(async (req, res) => {
 const createStaff = asyncHandler(async (req, res) => {
 	const { userId } = req.body;
 	if (!userId) {
-		return res.json({ message: "All fields are required" });
+		return res.json({ status:"Failed", message: "All fields are required" });
 	}
 	try {
 		const staff = await prisma.Staff.create({
