@@ -41,7 +41,7 @@ CREATE TABLE `_prisma_migrations` (
 
 LOCK TABLES `_prisma_migrations` WRITE;
 /*!40000 ALTER TABLE `_prisma_migrations` DISABLE KEYS */;
-INSERT INTO `_prisma_migrations` VALUES ('631dd47f-ecfc-4600-aca9-494b9b2e3cff','23ce2f804df3d3250915529945f31aea2a1b3ce8abf6a07a8f40d3ffb701ec06','2024-01-07 05:20:24.852','20240107052022_init',NULL,NULL,'2024-01-07 05:20:22.918',1);
+INSERT INTO `_prisma_migrations` VALUES ('16de04a1-2f21-435a-87dd-b70f3b89429f','c2c10afcc9ba5cc9b6e26038e713f327d40f04512d838dec87fd2df36936c20a','2024-01-11 13:57:40.617','20240111135738_init',NULL,NULL,'2024-01-11 13:57:38.865',1);
 /*!40000 ALTER TABLE `_prisma_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,6 +58,7 @@ CREATE TABLE `Attendence` (
   `presentCount` int NOT NULL DEFAULT '0',
   `presentDate` datetime(3) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `Attendence_id_userRefId_idx` (`id`,`userRefId`),
   KEY `Attendence_userRefId_fkey` (`userRefId`),
   CONSTRAINT `Attendence_userRefId_fkey` FOREIGN KEY (`userRefId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -82,7 +83,8 @@ DROP TABLE IF EXISTS `Department`;
 CREATE TABLE `Department` (
   `id` int NOT NULL AUTO_INCREMENT,
   `departmentName` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `Department_id_departmentName_idx` (`id`,`departmentName`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -106,7 +108,8 @@ DROP TABLE IF EXISTS `Semester`;
 CREATE TABLE `Semester` (
   `id` int NOT NULL AUTO_INCREMENT,
   `semesterName` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `Semester_id_semesterName_idx` (`id`,`semesterName`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -131,6 +134,7 @@ CREATE TABLE `Staff` (
   `staffId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`staffId`),
   UNIQUE KEY `Staff_staffId_key` (`staffId`),
+  KEY `Staff_staffId_idx` (`staffId`),
   CONSTRAINT `Staff_staffId_fkey` FOREIGN KEY (`staffId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -141,7 +145,6 @@ CREATE TABLE `Staff` (
 
 LOCK TABLES `Staff` WRITE;
 /*!40000 ALTER TABLE `Staff` DISABLE KEYS */;
-INSERT INTO `Staff` VALUES ('clr31r6os0000onmfiaxz0n8m');
 /*!40000 ALTER TABLE `Staff` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -161,6 +164,7 @@ CREATE TABLE `Student` (
   `departmentRefId` int NOT NULL,
   PRIMARY KEY (`studentId`),
   UNIQUE KEY `Student_studentId_key` (`studentId`),
+  KEY `Student_studentId_semesterRefId_departmentRefId_idx` (`studentId`,`semesterRefId`,`departmentRefId`),
   KEY `Student_semesterRefId_fkey` (`semesterRefId`),
   KEY `Student_departmentRefId_fkey` (`departmentRefId`),
   CONSTRAINT `Student_departmentRefId_fkey` FOREIGN KEY (`departmentRefId`) REFERENCES `Department` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -191,6 +195,7 @@ CREATE TABLE `StudentSubject` (
   `subjectRefId` int NOT NULL,
   `marks` int DEFAULT NULL,
   PRIMARY KEY (`id`),
+  KEY `StudentSubject_id_studentRefId_subjectRefId_idx` (`id`,`studentRefId`,`subjectRefId`),
   KEY `StudentSubject_subjectRefId_fkey` (`subjectRefId`),
   KEY `StudentSubject_studentRefId_fkey` (`studentRefId`),
   CONSTRAINT `StudentSubject_studentRefId_fkey` FOREIGN KEY (`studentRefId`) REFERENCES `Student` (`studentId`) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -225,6 +230,7 @@ CREATE TABLE `Subject` (
   `creditHour` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `Subject_subjectCode_key` (`subjectCode`),
+  KEY `Subject_id_subjectName_semesterRefId_departmentRefId_idx` (`id`,`subjectName`,`semesterRefId`,`departmentRefId`),
   KEY `Subject_semesterRefId_fkey` (`semesterRefId`),
   KEY `Subject_staffRefId_fkey` (`staffRefId`),
   KEY `Subject_departmentRefId_fkey` (`departmentRefId`),
@@ -268,9 +274,11 @@ CREATE TABLE `User` (
   `referenceKey` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `isVerified` tinyint(1) NOT NULL DEFAULT '0',
   `isSuspended` tinyint(1) NOT NULL DEFAULT '1',
+  `avatarURL` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `User_email_key` (`email`),
-  UNIQUE KEY `User_phoneNumber_key` (`phoneNumber`)
+  UNIQUE KEY `User_phoneNumber_key` (`phoneNumber`),
+  KEY `idx_id_email` (`id`,`role`,`phoneNumber`,`email`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -280,7 +288,7 @@ CREATE TABLE `User` (
 
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
-INSERT INTO `User` VALUES ('clr31q3ad0000onlhddnplgte','STUDENT','Sujan Basnet','itssujan167@gmail.com','Male','Kathmandu 123','SujanBasnet2023@student.ambition.edu.np','$2b$10$WAFjsXLC78lWnkc8eBXR.uG70lFHFg4xWH0rn8MLiApOOV8PeAdFC','2024-01-07 05:21:04.549','2024-01-07 05:21:04.549','9862913309','2001-04-26 00:00:00.000',NULL,NULL,0,0),('clr31r6os0000onmfiaxz0n8m','STAFF','Tenging Norgay','tenging@gmail.com','Male','Kathmandu 123','TengingNorgay2023@staff.ambition.edu.np','$2b$10$7QXaqGgtS8REtmgldAiT8eG.hSgM9cNcRTUDrh8.cFWYk2qH418.6','2024-01-07 05:21:55.609','2024-01-07 05:24:32.080','9821243212','1990-09-30 18:15:00.000',NULL,'Rl01Pvs',1,0),('clr31rfmv0001onmfxyeng982','ADMIN','Admin Parsad','itsmeyoursujan@gmail.com','Male','Kathmandu 123','AdminParsad2023@admin.ambition.edu.np','$2b$10$QG6yafw/xJpsN1l5NbOpT.yO56m8dgXcbRveQ.XVcoSUFEIs1t/Fq','2024-01-07 05:22:07.207','2024-01-07 05:24:42.097','31333333333','2001-04-26 00:00:00.000','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNscjMxcmZtdjAwMDFvbm1meHllbmc5ODIiLCJpYXQiOjE3MDQ2MDUwNDksImV4cCI6MTcwNDY5MTQ0OX0.CEB7uZOAqpPxyAPPsmGKEfrlgvCo7HoU7kUHZwbydzI','f6adhdA',1,0);
+INSERT INTO `User` VALUES ('clr99yiac0000onamq0pl4oww','ADMIN','Super Admin','itsmeyoursujan@gmail.com','Male','Kathmandu 123','SuperAdmin2023@admin.ambition.edu.np','$2b$10$34.LoAqsLrOBFIJe1szSQeeMysJbToZz08FZTj.9PN2ZZlM4hj2VW','2024-01-11 13:58:11.220','2024-01-11 13:58:11.220','9816790446','2001-04-26 00:00:00.000',NULL,NULL,1,0,NULL);
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -293,4 +301,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-07 11:14:46
+-- Dump completed on 2024-01-11 19:43:31

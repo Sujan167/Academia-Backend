@@ -31,10 +31,12 @@ model User {
   referenceKey String?
   isVerified   Boolean      @default(false)
   isSuspended  Boolean      @default(true)
-  // AvatarURL    String
+  avatarURL    String?
   Student      Student?
   Staff        Staff?
   Attendence   Attendence[]
+
+  @@index([id, role, phoneNumber, email, name], name: "idx_id_email")
 }
 
 // -------------------------------------------------------------------
@@ -53,6 +55,8 @@ model Department {
   departmentName String
   subjects       Subject[]
   students       Student[]
+
+  @@index([id, departmentName])
 }
 
 // -------------------------------------------------------------------
@@ -63,6 +67,8 @@ model Semester {
   semesterName String
   Subject      Subject[]
   Student      Student[]
+
+  @@index([id, semesterName])
 }
 
 // -------------------------------------------------------------------
@@ -81,6 +87,8 @@ model Subject {
   department      Department       @relation(fields: [departmentRefId], references: [id])
   StudentSubject  StudentSubject[]
   creditHour      Int
+
+  @@index([id, subjectName, semesterRefId, departmentRefId])
 }
 
 // -------------------------------------------------------------------
@@ -93,6 +101,8 @@ model StudentSubject {
   subject      Subject @relation(fields: [subjectRefId], references: [id])
   student      Student @relation(fields: [studentRefId], references: [studentId])
   marks        Int?
+
+  @@index([id, studentRefId, subjectRefId])
 }
 
 // -------------------------------------------------------------------
@@ -109,16 +119,20 @@ model Student {
   departmentRefId    Int
   department         Department       @relation(fields: [departmentRefId], references: [id])
   StudentSubject     StudentSubject[]
+
+  @@index([studentId, semesterRefId, departmentRefId])
 }
 
 // -------------------------------------------------------------------
 
 // Staff(id, subjectRefId,joinDate)
 model Staff {
-  staffId  String    @id @unique
-  user     User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String    @id @unique
+  user    User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
   // joinDate DateTime
-  Subject  Subject[]
+  Subject Subject[]
+
+  @@index([staffId])
 }
 
 // -------------------------------------------------------------------
@@ -129,4 +143,6 @@ model Attendence {
   user         User     @relation(fields: [userRefId], references: [id], onDelete: Cascade)
   presentCount Int      @default(0)
   presentDate  DateTime
+
+  @@index([id, userRefId])
 }

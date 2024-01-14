@@ -17,13 +17,12 @@ const getAllUser = asyncHandler(async (req, res) => {
 	const totalStaff = users.filter((item) => item.role == "STAFF").length;
 	const totalUser = users.length;
 
-	const data = { message: "Get all users 👻👻👻", totalUser, totalStaff, totalStudent, totalAdmin, users };
+	const data = { totalUser, totalStaff, totalStudent, totalAdmin, users };
+	const finalReply = { message: "Success", data: data };
 
-	// Set the data in Redis cache
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
-	res.status(200).json(data);
-	// new ApiResponse(200, data);
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -41,11 +40,11 @@ const getUser = asyncHandler(async (req, res) => {
 		select: customSelect,
 	});
 	if (user) {
-		const data = { message: "Get a user 👻", user };
-		const dataToCache = { data };
-		await redisClient.set(req.originalUrl, JSON.stringify(dataToCache), "EX", REDIS_TTL);
+		const finalReply = { message: "Success", data: user };
 
-		res.status(200).json(dataToCache);
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+		res.status(200).json(finalReply);
 	} else {
 		throw new ApiError(404, "User not found");
 	}
@@ -98,14 +97,22 @@ const updateUser = asyncHandler(async (req, res) => {
 	// If the user's role is "STUDENT"
 	if (userData.role.toUpperCase() === "STUDENT") {
 		const student = await updateStudent(req, res);
-		return res.status(200).json({ message: "Student updated 👻", updatedUser, student });
+		const data = { updatedUser, student };
+		const finalReply = { success: true, message: "Student Updated", data: data };
+
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+		return res.status(200).json(finalReply);
 	}
 	// If the user's role is "STAFF"
 	else if (userData.role.toUpperCase() === "STUDENT") {
 		const staff = await updateStaff(req, res);
-		return res.status(200).json({ message: "Student updated 👻", updatedUser, staff });
+		const data = { updatedUser, staff };
+		const finalReply = { success: true, message: "Staff Updated 👻", data: data };
+		return res.status(200).json(finalReply);
 	} else {
-		return res.status(200).json({ message: "Admin updated 🚀", updatedUser });
+		const finalReply = { success: true, message: "Admin Updated 👻", data: updatedUser };
+		return res.status(200).json(finalReply);
 	}
 });
 
@@ -132,7 +139,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 		include,
 	});
 
-	return res.json({ message: "delete user route 🚀", user });
+	return res.json({ success: true, message: `Deleted user: ${user.name} `, user });
 });
 
 // -------------------------------------------------------------------

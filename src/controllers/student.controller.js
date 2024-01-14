@@ -47,11 +47,12 @@ const getAllStudent = asyncHandler(async (req, res) => {
 	// const { role } = req.body;
 	const students = await prisma.Student.findMany({});
 	const totalStudent = students.length;
+	const data = { totalStudent, students };
+	const finalReply = { success: true, message: `Get all students👻`, data: data };
 
-	const data = { message: `Get all students👻`, totalStudent, students };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
-	res.status(200).json(data);
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -67,10 +68,12 @@ const getStudent = asyncHandler(async (req, res) => {
 		include: { user: true },
 	});
 	student.user.password = undefined;
-	const data = { message: `Get student for id: ${userId} 👻`, student };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
 
-	res.status(200).json(data);
+	const finalReply = { success: true, message: `Get student based on ID`, data: student };
+
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -79,7 +82,7 @@ const getStudent = asyncHandler(async (req, res) => {
 const getAllStudentsOfSameClass = asyncHandler(async (req, res) => {
 	const { semesterName, departmentName } = req.query;
 	if (!departmentName || !semesterName) {
-		return res.json({ message: "All fields are required" });
+		return res.json({ success: false, message: "All fields are required" });
 	}
 	const semester = await getSemesterId(semesterName);
 	const department = await getDepartmentId(departmentName);
@@ -92,13 +95,15 @@ const getAllStudentsOfSameClass = asyncHandler(async (req, res) => {
 			},
 		},
 	});
-	const totalStudent = await prisma.Student.count({
-		where: { semesterRefId: semester.id, departmentRefId: department.id },
-	});
-	const data = { message: "Get all students route 👻👻👻🚀", totalStudent, students };
+	const totalStudent = students.filter((student) => student.length);
+	// const totalStudent = await prisma.Student.count({
+	// where: { semesterRefId: semester.id, departmentRefId: department.id },
+	// });
+	const data = { totalStudent, students };
+	const finalReply = { success: true, message: `All Student of ${semesterName} Semester of ${departmentName} Department`, data: data };
 
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	res.status(200).json(data);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------

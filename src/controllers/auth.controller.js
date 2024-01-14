@@ -35,8 +35,8 @@ const generateOTP = asyncHandler(async (req, res) => {
 	// const mailText = `<a href="${FRONTEND_URL}/verify?token=${otp}">Click Here to verify your account</a>`;
 	const mailText = otp;
 	await sendEmail("OTP to reset password", mailText, email);
-
-	return res.status(200).json({ message: "OTP is sent to the email", email, otp });
+	const data = { email, otp };
+	return res.status(200).json({ success: true, message: "OTP is sent to the email", data: data });
 });
 
 // -------------------------------------------------------------------
@@ -44,9 +44,9 @@ const generateOTP = asyncHandler(async (req, res) => {
 // POST /api/auth/forget-password
 const verifyOTP = asyncHandler(async (req, res) => {
 	// const { otp } = req.query;
-	const {otp}=req.body
+	const { otp } = req.body;
 	if (!otp) {
-		return res.json({ message: "OTP is required" });
+		return res.json({ success: false, message: "OTP is required" });
 	}
 	const reference = await prisma.User.findFirst({
 		where: {
@@ -54,9 +54,9 @@ const verifyOTP = asyncHandler(async (req, res) => {
 		},
 	});
 	if (reference.referenceKey === otp) {
-		return res.status(200).json({ message: "OTP verified" });
+		return res.status(200).json({ success: true, message: "OTP verified" });
 	}
-	return res.status(403).json({ message: "Invalid OTP" });
+	return res.status(403).json({ success: false, message: "Invalid OTP" });
 });
 
 // -------------------------------------------------------------------
@@ -67,7 +67,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
 
 	const { password } = req.body;
 	if (!password) {
-		return res.json({ message: "Password is required" });
+		return res.json({ success: false, message: "Password is required" });
 	}
 	const hashedPass = await hashedPassword(password);
 	await prisma.User.update({
@@ -75,7 +75,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
 		data: { password: hashedPass, referenceKey: "" },
 	});
 	// making referenceKey empty for avoiding potential future risk
-	return res.status(200).json({ message: "Password Reset Successfully" });
+	return res.status(200).json({ success: true, message: "Password Reset Successfully" });
 });
 
 // -------------------------------------------------------------------
@@ -84,7 +84,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
 const setNewPassword = asyncHandler(async (req, res) => {
 	const { email, referenceKey, password } = req.body;
 	if (!email || !referenceKey || !password) {
-		return res.json({ message: "All fields are required." });
+		return res.json({ success: false, message: "All fields are required." });
 	}
 	const user = await prisma.User.findUnique({
 		where: { email },
@@ -95,9 +95,9 @@ const setNewPassword = asyncHandler(async (req, res) => {
 			where: { id: user.id },
 			data: { password: hashPass, referenceKey: "" },
 		});
-		return res.status(200).json({ message: "New Password is set!" });
+		return res.status(200).json({ success: true, message: "New Password is set!" });
 	}
-	return res.status(404).json({ message: "ReferenceKey mismatched" });
+	return res.status(404).json({ success: false, message: "ReferenceKey mismatched" });
 });
 // -------------------------------------------------------------------
 
@@ -116,12 +116,12 @@ const login = asyncHandler(async (req, res) => {
 				where: { id: tempUser.id },
 				data: { password: hashPass, referenceKey: "" },
 			});
-			return res.status(200).json({ message: "New Password is set!" });
+			return res.status(200).json({ success: true, message: "New Password is set!" });
 		}
 	}
 
 	if (!email || !role || !password) {
-		return res.json({ message: "All fields are required." });
+		return res.json({ success: false, message: "All fields are required." });
 	}
 
 	// Implement user authentication and Prisma query
@@ -134,10 +134,10 @@ const login = asyncHandler(async (req, res) => {
 	});
 
 	if (!user.isVerified) {
-		return res.status(403).json({ message: "You are not verified yet | please wait until admin verify you" });
+		return res.status(403).json({ success: false, message: "You are not verified yet | please wait until admin verify you" });
 	}
 	if (user.isSuspended) {
-		return res.status(403).json({ message: "Access Denied. User is suspeneded" });
+		return res.status(403).json({ success: false, message: "Access Denied. User is suspeneded" });
 	}
 
 	if (user && bcrypt.compareSync(password, user.password)) {
@@ -169,7 +169,7 @@ const login = asyncHandler(async (req, res) => {
 		newUser.refreshToken = undefined;
 		return res.json(newUser);
 	} else {
-		res.status(401).json({ message: "Authentication failed" });
+		res.status(401).json({ success: false, message: "Authentication failed" });
 	}
 });
 
@@ -182,6 +182,12 @@ const registration = asyncHandler(async (req, res) => {
 
 	if ([name, phoneNumber, email, role, dateOfBirth, address, gender, joinDate].some((field) => field?.trim === "")) {
 		throw new ApiError(400, "All fields are required");
+	}
+	const isUserExist = await prisma.User.findUnique({
+		where: { email },
+	});
+	if (isUserExist) {
+		return res.status(400).json({ success: false, message: "User Already Exist" });
 	}
 	const uName = name.split(" ");
 	const firstName = uName[0];

@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { generateReferenceCode, sendEmail, prisma, customSelect } = require("../utils");
 const { REDIS_TTL } = process.env;
+// const { REDIS_TTL } = process.env === "production" ? require("./config/prod.js") : require("../../config/dev.js");
 // ===================================================================
 
 // GET /api/admin
@@ -13,10 +14,10 @@ const getAllAdmin = asyncHandler(async (req, res) => {
 	});
 	// const totalAdmin = await prisma.User.count();
 	const totalAdmin = admins.length; //array
-
-	const data = { message: "Get all admin  🚀", totalAdmin, admins };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	return res.status(200).json(data);
+	const data = { totalAdmin, admins };
+	const finalReply = { status: "Succcess", message: "Get all admin  🚀", data: data };
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	return res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -25,7 +26,7 @@ const getAllAdmin = asyncHandler(async (req, res) => {
 const getAdmin = asyncHandler(async (req, res) => {
 	const { id } = req.params;
 	if (!id) {
-		return res.json({ message: "id is required" });
+		return res.json({ success: false, message: "id is required" });
 	}
 	const admin = await prisma.User.findUnique({
 		where: {
@@ -34,9 +35,9 @@ const getAdmin = asyncHandler(async (req, res) => {
 		},
 		select: customSelect,
 	});
-	const data = { message: `Get admin for id ${id} 🚀`, admin };
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
-	return res.status(200).json(data);
+	const finalReply = { success: true, message: `Get admin for id ${id} 🚀`, data: admin };
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+	return res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -45,7 +46,7 @@ const getAdmin = asyncHandler(async (req, res) => {
 const verifyNewRegistration = asyncHandler(async (req, res) => {
 	const { id } = req.body;
 	if (!id) {
-		return res.json({ message: "id is required" });
+		return res.json({ success: false, message: "id is required" });
 	}
 	const referenceKey = await generateReferenceCode(6);
 
@@ -55,8 +56,10 @@ const verifyNewRegistration = asyncHandler(async (req, res) => {
 		select: customSelect,
 	});
 	console.log(user);
+	const data = { referenceKey, user };
+	const finalReply = { success: true, message: "New User Verified", data: data };
 	await sendEmail("Reference Key", referenceKey, user.email);
-	return res.status(200).json({ message: "New User Verified", referenceKey, user });
+	return res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -65,7 +68,7 @@ const verifyNewRegistration = asyncHandler(async (req, res) => {
 const suspendUser = asyncHandler(async (req, res) => {
 	const { id } = req.body;
 	if (!id) {
-		return res.json({ message: "id is required" });
+		return res.json({ success: false, message: "id is required" });
 	}
 	const user = await prisma.User.update({
 		where: { id },
@@ -73,13 +76,13 @@ const suspendUser = asyncHandler(async (req, res) => {
 		select: customSelect,
 	});
 	await sendEmail("Suspended", "You are suspended from the system", user.email);
-	return res.status(200).json({ message: "User Suspended", user });
+	return res.status(200).json({ success: true, message: "User Suspended", data: user });
 });
 // PUT /api/admin/unsuspend-user
 const unSuspendUser = asyncHandler(async (req, res) => {
 	const { id } = req.body;
 	if (!id) {
-		return res.json({ message: "id is required" });
+		return res.json({ success: false, message: "id is required" });
 	}
 	const user = await prisma.User.update({
 		where: { id },
@@ -87,7 +90,7 @@ const unSuspendUser = asyncHandler(async (req, res) => {
 		select: customSelect,
 	});
 	await sendEmail("Suspension Canceled", "Welcome! Your suspension from the system is canceled.", user.email);
-	return res.status(200).json({ message: "User Suspension canceled", user });
+	return res.status(200).json({ success: true, message: "User Suspension canceled", data: user });
 });
 
 module.exports = { getAllAdmin, getAdmin, verifyNewRegistration, suspendUser, unSuspendUser };
