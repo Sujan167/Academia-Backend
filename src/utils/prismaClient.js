@@ -4,7 +4,9 @@ const prisma = new PrismaClient();
 prisma
 	.$connect()
 	.then(() => {
-		console.log("🟢 --- @Connected to the database --- 🚀");
+		console.log("||🟢 --- @ Connected to the database --- 🚀");
+		console.log(`||🟢 --- @ ${process.env.DATABASE_URL} --- 🚀`);
+		console.log(`===============================================================`);
 	})
 	.catch((error) => {
 		console.error("Error connecting to the database:\n", error);

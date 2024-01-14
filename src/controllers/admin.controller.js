@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { generateReferenceCode, sendEmail, prisma, customSelect } = require("../utils");
 const { REDIS_TTL } = process.env;
+// const { REDIS_TTL } = process.env === "production" ? require("./config/prod.js") : require("../../config/dev.js");
 // ===================================================================
 
 // GET /api/admin

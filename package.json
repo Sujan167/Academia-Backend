@@ -1,19 +1,13 @@
 {
-	"name": "cms",
+	"name": "academia",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Academia is a College Management System Based On Express.",
 	"main": "app.js",
-	"scripts": {
-		"start": "NODE_ENV=production node app.js",
-		"dev": "NODE_ENV=development nodemon app.js"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "MIT",
 	"dependencies": {
 		"@prisma/client": "^5.4.2",
 		"bcrypt": "^5.1.1",
 		"cloudinary": "^1.41.0",
+		"compression": "^1.7.4",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
 		"dotenv": "^16.3.1",
@@ -29,7 +23,25 @@
 		"socket.io": "^4.7.2"
 	},
 	"devDependencies": {
-		"nodemon": "^3.0.1",
-		"prisma": "^5.4.2"
-	}
+		"nodemon": "^3.0.2",
+		"prisma": "^5.8.0"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "NODE_ENV=development nodemon app.js",
+		"start": "NODE_ENV=production node app.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Sujan167/Academia-Backend.git"
+	},
+	"keywords": [
+		"Academia"
+	],
+	"author": "Sujan Basnet",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Sujan167/Academia-Backend/issues"
+	},
+	"homepage": "https://github.com/Sujan167/Academia-Backend#readme"
 }

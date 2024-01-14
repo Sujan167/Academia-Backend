@@ -17,13 +17,12 @@ const getAllUser = asyncHandler(async (req, res) => {
 	const totalStaff = users.filter((item) => item.role == "STAFF").length;
 	const totalUser = users.length;
 
-	const data = { message: "Get all users 👻👻👻", totalUser, totalStaff, totalStudent, totalAdmin, users };
+	const data = { totalUser, totalStaff, totalStudent, totalAdmin, users };
+	const finalReply = { status: "Success", message: "All Users", data: data };
 
-	// Set the data in Redis cache
-	await redisClient.set(req.originalUrl, JSON.stringify(data), "EX", REDIS_TTL);
+	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
-	res.status(200).json(data);
-	// new ApiResponse(200, data);
+	res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -42,10 +41,12 @@ const getUser = asyncHandler(async (req, res) => {
 	});
 	if (user) {
 		const data = { message: "Get a user 👻", user };
-		const dataToCache = { data };
-		await redisClient.set(req.originalUrl, JSON.stringify(dataToCache), "EX", REDIS_TTL);
+		// const dataToCache = { data };
+		const finalReply = { status: "Success", message: "Get a User", data: data };
 
-		res.status(200).json(dataToCache);
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+		res.status(200).json(finalReply);
 	} else {
 		throw new ApiError(404, "User not found");
 	}

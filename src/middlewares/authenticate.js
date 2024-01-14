@@ -3,9 +3,9 @@ const dotenv = require("dotenv");
 
 // Load environment variables based on the current environment
 if (process.env.NODE_ENV === "development") {
-	dotenv.config({ path: "./config/dev.env" });
+	dotenv.config({ path: "../../config/dev.env" });
 } else if (process.env.NODE_ENV === "production") {
-	dotenv.config({ path: "./config/prod.env" });
+	dotenv.config({ path: "../../config/prod.env" });
 }
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");

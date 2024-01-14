@@ -44,7 +44,7 @@ const generateOTP = asyncHandler(async (req, res) => {
 // POST /api/auth/forget-password
 const verifyOTP = asyncHandler(async (req, res) => {
 	// const { otp } = req.query;
-	const {otp}=req.body
+	const { otp } = req.body;
 	if (!otp) {
 		return res.json({ message: "OTP is required" });
 	}
@@ -182,6 +182,12 @@ const registration = asyncHandler(async (req, res) => {
 
 	if ([name, phoneNumber, email, role, dateOfBirth, address, gender, joinDate].some((field) => field?.trim === "")) {
 		throw new ApiError(400, "All fields are required");
+	}
+	const isUserExist = await prisma.User.findUnique({
+		where: { email },
+	});
+	if (isUserExist) {
+		return res.status(400).json({ message: "User Already Exist" });
 	}
 	const uName = name.split(" ");
 	const firstName = uName[0];

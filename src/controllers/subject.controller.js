@@ -8,18 +8,21 @@ const { getSemesterId, getDepartmentId } = require("./student.controller");
 
 const getAllSubject = asyncHandler(async (req, res) => {
 	const { semesterName, departmentName } = req.query;
-	console.log(semesterName, departmentName);
+	// console.log(semesterName, departmentName);
 	if (semesterName && !departmentName) {
 		const semesterRefId = await getSemesterId(semesterName);
 
 		const subjectOfSemesterOfAllDepartment = await prisma.subject.findMany({
 			where: { semesterRefId },
 		});
-		console.log(`\nsubjectOfSemesterOfAllDepartment: ${JSON.stringify(subjectOfSemesterOfAllDepartment)}\n`);
+		// const totalRegularSubject = subjectOfSemesterOfAllDepartment.filter((item) => item.isElective === false).length;
+		// const data = { totalRegularSubject, subjectOfSemesterOfAllDepartment };
+		
+		const finalReply = { status: "Success", message: `All Subjects of ${semesterName} Semester`, data: subjectOfSemesterOfAllDepartment };
 
-		await redisClient.set(req.originalUrl, JSON.stringify(subjectOfSemesterOfAllDepartment), "EX", REDIS_TTL);
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
 
-		res.status(200).json(subjectOfSemesterOfAllDepartment);
+		res.status(200).json(finalReply);
 
 		// --------------------------------------------------------------
 	} else if (!semesterName && departmentName) {
@@ -28,36 +31,41 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		const subjectOfADepartment = await prisma.subject.findMany({
 			where: { departmentRefId },
 		});
-		console.log(`\nsubjectOfADepartment: ${JSON.stringify(subjectOfADepartment)}\n`);
-		await redisClient.set(req.originalUrl, JSON.stringify(subjectOfADepartment), "EX", REDIS_TTL);
-		res.status(200).json(subjectOfADepartment);
+		const finalReply = { status: "Success", message: `All Subjects of ${departmentName} Department`, data: subjectOfADepartment };
+
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+		res.status(200).json(finalReply);
 
 		// --------------------------------------------------------------
 	} else if (semesterName && departmentName) {
 		// If both semesterName and departmentName are present, execute another query
 		const semesterRefId = await getSemesterId(semesterName);
 		const departmentRefId = await getDepartmentId(departmentName);
-		console.log(semesterRefId, departmentRefId);
+		// console.log(semesterRefId, departmentRefId);
 		const subjectOfSemesterOfDepartment = await prisma.subject.findMany({
 			where: {
 				semesterRefId,
 				departmentRefId,
 			},
 		});
-		console.log(`\nsubjectOfSemesterOfDepartment: ${JSON.stringify(subjectOfSemesterOfDepartment)}\n`);
+		// const totalRegularSubject = subjectOfSemesssterOfDepartment.filter((item) => item.isElective === false).length;
+		// const data = { totalRegularSubject, subjectOfSemesterOfDepartment };
 
-		await redisClient.set(req.originalUrl, JSON.stringify(subjectOfSemesterOfDepartment), "EX", REDIS_TTL);
+		const finalReply = { status: "Success", message: `All Subjects of ${semesterName} Semester of ${departmentName} Department`, data: subjectOfSemesterOfDepartment };
 
-		res.status(200).json(subjectOfSemesterOfDepartment);
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+
+		res.status(200).json(finalReply);
 
 		// --------------------------------------------------------------
 	} else {
 		// If neither semesterName nor departmentName are present, return all subjects
 		const allSubjects = await prisma.subject.findMany({});
-		await redisClient.set(req.originalUrl, JSON.stringify(allSubjects), "EX", REDIS_TTL);
+		const finalReply = { status: "Success", message: "All Subjects", data: allSubjects };
 
-		console.log(`\nsubjects: ${JSON.stringify(allSubjects)}\n`);
-		res.status(200).json(allSubjects);
+		await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
+		res.status(200).json(finalReply);
 	}
 });
 
@@ -80,7 +88,4 @@ const getSubject = asyncHandler(async (req, res) => {
 	res.status(200).json(data);
 });
 
-const getAllSubjectsOfSemester = asyncHandler(async (req, res) => {
-	res.status(200).json({ message: "Get all subject of semester route" });
-});
-module.exports = { getAllSubject, getSubject, getAllSubjectsOfSemester };
+module.exports = { getAllSubject };

@@ -1,15 +1,5 @@
-// require("dotenv").config();
-const dotenv = require("dotenv");
-
-// Load environment variables based on the current environment
-if (process.env.NODE_ENV === "development") {
-	dotenv.config({ path: "./config/dev.env" });
-} else if (process.env.NODE_ENV === "production") {
-	dotenv.config({ path: "./config/prod.env" });
-}
 const crypto = require("crypto");
 const prisma = require("./prismaClient");
-
 const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN_SECRET, TOKEN_EXPIRATION, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRATION } = process.env;
 // ===================================================================

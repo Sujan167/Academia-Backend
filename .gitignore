@@ -4,7 +4,6 @@ node_modules
 config/dev.env
 config/prod.env
 docker-compose.yaml
-Dockerfile
 *.http
 prisma/*.js
 prisma/migrations
