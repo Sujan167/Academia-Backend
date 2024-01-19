@@ -8,6 +8,7 @@ const { createStaff } = require("./staff.controller");
 const { ApiError } = require("../utils");
 const { appendCache, prisma, sendEmail } = require("../utils");
 const { generateAccessToken, generateRefreshToken, generateReferenceCode } = require("../utils");
+
 // ===================================================================
 
 // Hash the password
@@ -32,8 +33,8 @@ const generateOTP = asyncHandler(async (req, res) => {
 
 	//3. send mail
 
-	// const mailText = `<a href="${FRONTEND_URL}/verify?token=${otp}">Click Here to verify your account</a>`;
 	const mailText = otp;
+
 	await sendEmail("OTP to reset password", mailText, email);
 	const data = { email, otp };
 	return res.status(200).json({ success: true, message: "OTP is sent to the email", data: data });
@@ -214,6 +215,7 @@ const registration = asyncHandler(async (req, res) => {
 	const newUser = await prisma.User.create({
 		data: userDataToCreate,
 	});
+	console.log(`\nuserID:: ${newUser.id}\n`);
 	newUser.password = undefined;
 	newUser.updated_at = undefined;
 
@@ -224,10 +226,10 @@ const registration = asyncHandler(async (req, res) => {
 	await appendCache("/api/user/", "users", newUser);
 
 	if (userData.role.toUpperCase() === "STUDENT") {
-		createStudent(req, res);
+		await createStudent(req, res);
 		return res.status(201).json({ message: "New Student Created 👻", newUser });
 	} else if (userData.role.toUpperCase() === "STAFF") {
-		createStaff(req, res);
+		await createStaff(req, res);
 		return res.status(201).json({ message: "New Staff Created 👻", newUser });
 	} else {
 		return res.status(201).json({ message: "New Admin Created 👻", newUser });

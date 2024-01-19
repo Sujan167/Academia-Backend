@@ -42,7 +42,7 @@ app.use(
 		max: 4,
 		message: {
 			code: 429,
-			message: "Ruko jara sabar karo!",
+			message: "Please Wait! We are scaling.",
 		},
 	})
 );
@@ -50,24 +50,31 @@ app.use(
 app.get("/", async (req, res, next) => {
 	res.json({ message: "Awesome it works 🐻" });
 });
-// app.use(formatResponseMiddleware);
 
 app.use("/api/v1/auth", require("./src/routes/auth.route"));
+app.use("/api/v1/compiler", require("./src/routes/compiler.route"));
 
 app.use("/api/v1/subject", cacheMiddleware, require("./src/routes/subject.route"));
+app.use("/api/v1/user", cacheMiddleware, require("./src/routes/user.route"));
 
 app.use(authenticate); // need credintials for all the route below
+
+// -----------------------------------------------------------------------------
+app.use("/api/v1/dashboard", cacheMiddleware, require("./src/routes/dashboard.route"));
+// -----------------------------------------------------------------------------
 
 app.use("/api/v1/student", checkRole(["ADMIN", "STAFF", "STUDENT"]), cacheMiddleware, require("./src/routes/student.route"));
 
 app.use("/api/v1/staff", checkRole(["ADMIN", "STAFF"]), cacheMiddleware, require("./src/routes/staff.route"));
 
 app.use("/api/v1/admin", checkRole(["ADMIN"]), cacheMiddleware, require("./src/routes/admin.route"));
-app.use("/api/v1/user", checkRole(["ADMIN"]), cacheMiddleware, require("./src/routes/user.route"));
+// app.use("/api/v1/user", checkRole(["ADMIN"]), cacheMiddleware, require("./src/routes/user.route"));
 
 app.use((req, res, next) => {
 	next(createError.NotFound());
 });
+
+// ======================================================
 
 // ERROR HANDLER MIDDLEWARE
 app.use(ErrorHandler);

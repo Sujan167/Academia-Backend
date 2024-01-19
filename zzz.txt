@@ -1,0 +1,9 @@
+GET:
+on every route, go to the controller.
+inside the controller, first check the data in cache with specific key, if key is not found then perform query and set data in cache and then filter the data, and response back.
+
+POST:
+for post request, first update the cache and then insert into database because inserting into database and refetching everything again takes time and waste resources.
+
+QUEUE on non critical task like email
+on email service, implement queue service. email will be send later by consuming queue

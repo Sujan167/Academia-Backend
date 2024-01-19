@@ -1,4 +1,4 @@
-const { redisClient, ApiResponse } = require("../utils/");
+const { redisClient } = require("../utils/");
 
 // Define a middleware to check and manage cache
 const cacheMiddleware = async (req, res, next) => {
@@ -15,7 +15,7 @@ const cacheMiddleware = async (req, res, next) => {
 			// new ApiResponse(200, parsedData);
 		} else {
 			// If data is not cached, continue to the route handler
-			console.log("--- Data not found in cache ❗️❗️❗️---");
+			console.log("--- Data not found in cache ❗️---");
 			next();
 		}
 	} catch (err) {

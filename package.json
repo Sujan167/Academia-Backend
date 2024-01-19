@@ -6,6 +6,7 @@
 	"dependencies": {
 		"@prisma/client": "^5.4.2",
 		"bcrypt": "^5.1.1",
+		"child-process": "^1.0.2",
 		"cloudinary": "^1.41.0",
 		"compression": "^1.7.4",
 		"cookie-parser": "^1.4.6",
