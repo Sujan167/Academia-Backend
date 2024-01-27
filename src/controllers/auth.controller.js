@@ -7,7 +7,7 @@ const { createStudent } = require("./student.controller");
 const { createStaff } = require("./staff.controller");
 const { ApiError } = require("../utils");
 const { appendCache, prisma, sendEmail } = require("../utils");
-const { generateAccessToken, generateRefreshToken, generateReferenceCode } = require("../utils");
+const { generateAccessToken, generateRefreshToken, generateReferenceCode, emailQueue } = require("../utils");
 
 // ===================================================================
 
@@ -30,12 +30,20 @@ const generateOTP = asyncHandler(async (req, res) => {
 		where: { id: req.user.id },
 		data: { referenceKey: otp },
 	});
+	await prisma.otp.create({
+		data: {
+			email: email,
+			key: otp,
+		},
+	});
 
 	//3. send mail
 
 	const mailText = otp;
+	// await sendEmail("OTP to reset password", mailText, email);
+	// add to queue
+	emailQueue.add(mailText, email);
 
-	await sendEmail("OTP to reset password", mailText, email);
 	const data = { email, otp };
 	return res.status(200).json({ success: true, message: "OTP is sent to the email", data: data });
 });
@@ -54,6 +62,11 @@ const verifyOTP = asyncHandler(async (req, res) => {
 			id: req.user.id,
 		},
 	});
+	// const key = await prisma.otp.findFirst({
+	// 	where: {
+	// 		email: req.user.email,
+	// 	},
+	// });
 	if (reference.referenceKey === otp) {
 		return res.status(200).json({ success: true, message: "OTP verified" });
 	}
@@ -198,7 +211,6 @@ const registration = asyncHandler(async (req, res) => {
 	const username = `${firstName}${lastName}${joiningYear}@${role.toLowerCase()}.ambition.edu.np`;
 
 	// Hash the password before saving it to the database
-	// const hashedPassword = await bcrypt.hash(password, 10);
 	if (email === SUPER_USER_EMAIL) {
 		var password = "password@123";
 		var isVerified = true;

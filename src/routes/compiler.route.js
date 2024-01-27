@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const compiler = require("../controllers/codeCompile.controller");
+const compiler = require("../service/codeCompiler.js");
 
 router.route("/").post(compiler);
 

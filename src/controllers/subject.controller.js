@@ -3,26 +3,14 @@ const asyncHandler = require("express-async-handler");
 const { REDIS_TTL } = process.env;
 const { getSemesterId, getDepartmentId } = require("./student.controller");
 // =======================================================================
+const ITEMS_PER_PAGE = 10;
 
 const getAllSubject = asyncHandler(async (req, res) => {
+	const page = parseInt(req.query.page) || 1;
+	const skip = (page - 1) * ITEMS_PER_PAGE;
 	const { semesterName, departmentName } = req.query;
 	// console.log(semesterName, departmentName);
 	if (semesterName && !departmentName) {
-		
-		// const cacheKey = "All Subjects";
-		// const cachedData = await redisClient.get(cacheKey);
-
-		// if (cachedData) {
-		// 	// If cached data exists, send it as the response
-		// 	const parsedData = JSON.parse(cachedData);
-
-		// 	// res.status(200).json(parsedData);
-			
-		// } else {
-		// 	// If data is not cached, continue to the route handler
-		// 	console.log("--- Data not found in cache ❗️---");
-		// 	next();
-		// }
 		const semesterRefId = await getSemesterId(semesterName);
 
 		const subject = await prisma.subject.findMany({
@@ -31,12 +19,6 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		const totalRegularSubject = subject.filter((item) => item.isElective === false).length;
 		var data = { totalRegularSubject, subject };
 
-		// const finalReply = { success: true, data: data };
-
-		// await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
-
-		// res.status(200).json(finalReply);
-
 		// --------------------------------------------------------------
 	} else if (!semesterName && departmentName) {
 		const departmentRefId = await getDepartmentId(departmentName);
@@ -44,11 +26,6 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		var data = await prisma.subject.findMany({
 			where: { departmentRefId },
 		});
-		// const finalReply = { success: true, data: subjectOfADepartment };
-
-		// await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
-
-		// res.status(200).json(finalReply);
 
 		// --------------------------------------------------------------
 	} else if (semesterName && departmentName) {
@@ -65,20 +42,13 @@ const getAllSubject = asyncHandler(async (req, res) => {
 		const totalRegularSubject = subjects.filter((item) => item.isElective === false).length;
 		var data = { totalRegularSubject, subjects };
 
-		// const finalReply = { success: true, data: data };
-
-		// await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
-
-		// res.status(200).json(finalReply);
-
 		// --------------------------------------------------------------
 	} else {
 		// If neither semesterName nor departmentName are present, return all subjects
-		var data = await prisma.subject.findMany({});
-		// const finalReply = { success: true, data: allSubjects };
-
-		// await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);
-		// res.status(200).json(finalReply);
+		var data = await prisma.subject.findMany({
+			take: ITEMS_PER_PAGE,
+			skip,
+		});
 	}
 	const finalReply = { success: true, data: data };
 	await redisClient.set(req.originalUrl, JSON.stringify(finalReply), "EX", REDIS_TTL);

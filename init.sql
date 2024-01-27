@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.1.0, for macos12.6 (x86_64)
+-- MySQL dump 10.13  Distrib 8.2.0, for macos12.6 (x86_64)
 --
 -- Host: localhost    Database: cms
 -- ------------------------------------------------------
--- Server version	8.1.0
+-- Server version	8.2.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -41,7 +41,7 @@ CREATE TABLE `_prisma_migrations` (
 
 LOCK TABLES `_prisma_migrations` WRITE;
 /*!40000 ALTER TABLE `_prisma_migrations` DISABLE KEYS */;
-INSERT INTO `_prisma_migrations` VALUES ('16de04a1-2f21-435a-87dd-b70f3b89429f','c2c10afcc9ba5cc9b6e26038e713f327d40f04512d838dec87fd2df36936c20a','2024-01-11 13:57:40.617','20240111135738_init',NULL,NULL,'2024-01-11 13:57:38.865',1);
+INSERT INTO `_prisma_migrations` VALUES ('7f13454e-bcfb-4adf-a6aa-2148332d2722','582a8e8f13a71d5f6cd01505e275d39af9cf6ae47507ee4d834c113eb1ffebb8','2024-01-20 04:26:37.896','20240120042635_init',NULL,NULL,'2024-01-20 04:26:35.830',1);
 /*!40000 ALTER TABLE `_prisma_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,6 +99,68 @@ INSERT INTO `Department` VALUES (1,'CSIT'),(2,'BCA');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `Notice`
+--
+
+DROP TABLE IF EXISTS `Notice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Notice` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  `createdBy` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `Notice_title_key` (`title`),
+  KEY `Notice_id_title_createdBy_created_at_userId_idx` (`id`,`title`,`createdBy`,`created_at`,`userId`),
+  KEY `Notice_userId_fkey` (`userId`),
+  CONSTRAINT `Notice_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Notice`
+--
+
+LOCK TABLES `Notice` WRITE;
+/*!40000 ALTER TABLE `Notice` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Notice` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `Otp`
+--
+
+DROP TABLE IF EXISTS `Otp`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Otp` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `key` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  UNIQUE KEY `Otp_id_key` (`id`),
+  UNIQUE KEY `Otp_key_key` (`key`),
+  KEY `Otp_email_userId_key_created_at_idx` (`email`,`userId`,`key`,`created_at`),
+  KEY `Otp_userId_fkey` (`userId`),
+  CONSTRAINT `Otp_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Otp`
+--
+
+LOCK TABLES `Otp` WRITE;
+/*!40000 ALTER TABLE `Otp` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Otp` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `Semester`
 --
 
@@ -135,7 +197,7 @@ CREATE TABLE `Staff` (
   PRIMARY KEY (`staffId`),
   UNIQUE KEY `Staff_staffId_key` (`staffId`),
   KEY `Staff_staffId_idx` (`staffId`),
-  CONSTRAINT `Staff_staffId_fkey` FOREIGN KEY (`staffId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `Staff_staffId_fkey` FOREIGN KEY (`staffId`) REFERENCES `User` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -164,12 +226,12 @@ CREATE TABLE `Student` (
   `departmentRefId` int NOT NULL,
   PRIMARY KEY (`studentId`),
   UNIQUE KEY `Student_studentId_key` (`studentId`),
-  KEY `Student_studentId_semesterRefId_departmentRefId_idx` (`studentId`,`semesterRefId`,`departmentRefId`),
+  KEY `Student_studentId_semesterRefId_departmentRefId_symbolNumber_idx` (`studentId`,`semesterRefId`,`departmentRefId`,`symbolNumber`,`registrationNumber`),
   KEY `Student_semesterRefId_fkey` (`semesterRefId`),
   KEY `Student_departmentRefId_fkey` (`departmentRefId`),
   CONSTRAINT `Student_departmentRefId_fkey` FOREIGN KEY (`departmentRefId`) REFERENCES `Department` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `Student_semesterRefId_fkey` FOREIGN KEY (`semesterRefId`) REFERENCES `Semester` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `Student_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `Student_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `User` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -278,7 +340,7 @@ CREATE TABLE `User` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `User_email_key` (`email`),
   UNIQUE KEY `User_phoneNumber_key` (`phoneNumber`),
-  KEY `idx_id_email` (`id`,`role`,`phoneNumber`,`email`,`name`)
+  KEY `User_id_role_phoneNumber_email_name_idx` (`id`,`role`,`phoneNumber`,`email`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -288,7 +350,7 @@ CREATE TABLE `User` (
 
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
-INSERT INTO `User` VALUES ('clr99yiac0000onamq0pl4oww','ADMIN','Super Admin','itsmeyoursujan@gmail.com','Male','Kathmandu 123','SuperAdmin2023@admin.ambition.edu.np','$2b$10$34.LoAqsLrOBFIJe1szSQeeMysJbToZz08FZTj.9PN2ZZlM4hj2VW','2024-01-11 13:58:11.220','2024-01-11 13:58:11.220','9816790446','2001-04-26 00:00:00.000',NULL,NULL,1,0,NULL);
+INSERT INTO `User` VALUES ('clrllokzr0000on9li078rpdf','ADMIN','Admin Admin','itsmeyoursujan@gmail.com','Male','Kathmandu 123','AdminAdmin2023@admin.ambition.edu.np','$2b$10$Di1SuqFvO1hn0MJqp/WW9.E8j5KLB2nB8pFin.Fa25ybzrLkPJonW','2024-01-20 04:59:37.671','2024-01-20 04:59:37.671','9816790446','2001-04-26 00:00:00.000',NULL,NULL,1,0,NULL);
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -301,4 +363,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-11 19:43:31
+-- Dump completed on 2024-01-20 10:44:52

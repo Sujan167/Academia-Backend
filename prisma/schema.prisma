@@ -35,8 +35,9 @@ model User {
   Student      Student?
   Staff        Staff?
   Attendence   Attendence[]
+  Notice       Notice[]
 
-  @@index([id, role, phoneNumber, email, name], name: "idx_id_email")
+  @@index([id, role, phoneNumber, email, name])
 }
 
 // -------------------------------------------------------------------
@@ -147,4 +148,26 @@ model Attendence {
   presentDate  DateTime
 
   @@index([id, userRefId])
+}
+
+model Notice {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  description String   @db.VarChar(1024)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  createdBy   String
+  // userId      String
+  user        User     @relation(fields: [createdBy], references: [id])
+
+  @@index([id, title, createdBy, created_at])
+}
+
+model Otp {
+  id         Int      @unique @default(autoincrement())
+  email      String
+  created_at DateTime @default(now())
+  key        String   @unique
+
+  @@index([email, key, created_at])
 }

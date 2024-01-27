@@ -16,6 +16,8 @@ const authenticate = require("./src/middlewares/authenticate");
 const ErrorHandler = require("./src/errors/ErrorHandler");
 const cacheMiddleware = require("./src/middlewares/cache.middleware");
 const checkRole = require("./src/middlewares/checkRole.middleware");
+// const { Queue } = require("bullmq");
+const axios = require("axios"); // Install axios with npm install axios
 
 const app = express();
 
@@ -52,11 +54,41 @@ app.get("/", async (req, res, next) => {
 });
 
 app.use("/api/v1/auth", require("./src/routes/auth.route"));
-app.use("/api/v1/compiler", require("./src/routes/compiler.route"));
 
-app.use("/api/v1/subject", cacheMiddleware, require("./src/routes/subject.route"));
+// ----------------------------------------------------------------
+// This requrest will be handled by another service -> GoLang
+
+app.use("/api/v1/compile", require("./src/routes/compiler.route"));
+
+// Function to make an asynchronous request to Service 2
+
+// const requestService2 = async (data) => {
+// 	const service2Url = "http://localhost:3002/api/v1/compile";
+
+// 	try {
+// 		const response = await axios.post(service2Url, {
+			
+// 			body: JSON.stringify(data),
+// 		});
+// 		return response.data;
+// 	} catch (error) {
+// 		console.error("Error calling Service 2:", error.message);
+// 		throw error;
+// 	}
+// };
+// app.post("/api/v1/compile", async (req, res) => {
+// 	try {
+// 		const service2Result = await requestService2(req.body);
+// 		res.send(`Redirected! Service 2 response: ${service2Result}`);
+// 	} catch (error) {
+// 		res.status(500).send("Internal Server Error");
+// 	}
+// });
+// ----------------------------------------------------------------
+
 app.use("/api/v1/user", cacheMiddleware, require("./src/routes/user.route"));
 
+app.use("/api/v1/subject", cacheMiddleware, require("./src/routes/subject.route"));
 app.use(authenticate); // need credintials for all the route below
 
 // -----------------------------------------------------------------------------

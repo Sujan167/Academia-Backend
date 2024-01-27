@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
-const { generateReferenceCode, sendEmail, prisma, customSelect } = require("../utils");
-const { REDIS_TTL } = process.env;
-// const { REDIS_TTL } = process.env === "production" ? require("./config/prod.js") : require("../../config/dev.js");
+const { generateReferenceCode, sendEmail, prisma, customSelect, emailQueue } = require("../utils");
+const { SUPER_USER_EMAIL, REDIS_TTL } = process.env;
+
 // ===================================================================
 
 // GET /api/admin
@@ -58,8 +58,11 @@ const verifyNewRegistration = asyncHandler(async (req, res) => {
 	console.log(user);
 	const data = { referenceKey, user };
 	const finalReply = { success: true, message: "New User Verified", data: data };
-	await sendEmail("Reference Key", referenceKey, user.email);
-	return res.status(200).json(finalReply);
+	// await sendEmail("Reference Key", referenceKey, user.email);
+	console.log(referenceKey);
+	emailQueue.add("emailQueue", data).then(() => {
+		return res.status(200).json(finalReply);
+	});
 });
 
 // -------------------------------------------------------------------
@@ -69,6 +72,12 @@ const suspendUser = asyncHandler(async (req, res) => {
 	const { id } = req.body;
 	if (!id) {
 		return res.json({ success: false, message: "id is required" });
+	}
+	const _user = await prisma.User.findUnique({
+		where: { id },
+	});
+	if (_user.email === SUPER_USER_EMAIL) {
+		return res.json({ success: false, message: "Super User can't be suspended" });
 	}
 	const user = await prisma.User.update({
 		where: { id },
@@ -83,6 +92,12 @@ const unSuspendUser = asyncHandler(async (req, res) => {
 	const { id } = req.body;
 	if (!id) {
 		return res.json({ success: false, message: "id is required" });
+	}
+	const _user = await prisma.User.findFirst({
+		where: { id },
+	});
+	if (_user.isSuspended === false) {
+		return res.json({ success: false, message: "User is not suspended." });
 	}
 	const user = await prisma.User.update({
 		where: { id },
