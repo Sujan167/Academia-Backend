@@ -7,7 +7,7 @@ const { ACCESS_TOKEN_SECRET, TOKEN_EXPIRATION, REFRESH_TOKEN_SECRET, REFRESH_TOK
 // Generate an access token.
 async function generateAccessToken(user) {
 	// const user = await findUserById(id);
-	const payload = { id: user.id, email: user.email, role: user.role, isVerified: user.isVerified, isSuspended: user.isSuspended };
+	const payload = { id: user.id, email: user.email, role: user.role, verified: user.verified, suspended: user.suspended };
 
 	const token = await jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: TOKEN_EXPIRATION });
 	return { token, user };

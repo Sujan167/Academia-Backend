@@ -28,10 +28,10 @@ const authenticate = asyncHandler(async (req, res, next) => {
 		const decoded = await jwt.verify(accessToken, ACCESS_TOKEN_SECRET);
 		req.user = decoded;
 		console.log(`\nMiddleware decoded: ${JSON.stringify(decoded)}\n`);
-		if (!decoded.isVerified) {
+		if (!decoded.verified) {
 			return res.status(403).json({ message: "You are not verified yet | please wait until admin verify you" });
 		}
-		if (decoded.isSuspended) {
+		if (decoded.suspended) {
 			return res.status(403).json({ message: "Access Denied. User is suspeneded" });
 		}
 		next();

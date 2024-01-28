@@ -6,5 +6,5 @@ const redisClient = require("./redis");
 const ApiError = require("./ApiError");
 const ApiResponse = require("./ApiResponse");
 const { generateAccessToken, generateRefreshToken, findUserById, generateReferenceCode } = require("./generateToken");
-
-module.exports = { appendCache, updateCache, deleteCache, customSelect, sendEmail, prisma, redisClient, ApiError, ApiResponse, generateAccessToken, generateRefreshToken, findUserById, generateReferenceCode };
+const produceToQueue = require("./queueProducer");
+module.exports = { appendCache, updateCache, deleteCache, customSelect, sendEmail, prisma, redisClient, ApiError, ApiResponse, generateAccessToken, generateRefreshToken, findUserById, generateReferenceCode, produceToQueue };

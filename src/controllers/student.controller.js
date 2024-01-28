@@ -109,23 +109,32 @@ const getAllStudentsOfSameClass = asyncHandler(async (req, res) => {
 // -------------------------------------------------------------------
 
 const createStudent = asyncHandler(async (req, res) => {
-	const { userId, departmentName, semesterName, joinDate, symbolNumber = null, registrationNumber = null } = req.body;
-	if (!userId || !departmentName || !semesterName || !joinDate) {
+	const { userId, departmentName, semesterName, batch, symbolNumber = null, registrationNumber = null } = req.body;
+	if (!userId || !departmentName || !semesterName || !batch) {
 		return res.json({ message: "All fields are required" });
 	}
 
 	const department = await getDepartmentId(departmentName);
 	const semester = await getSemesterId(semesterName);
-
+	console.log(req.body);
+	const data = {
+		studentId: userId,
+		semesterRefId: semester,
+		registrationNumber,
+		symbolNumber,
+		batch: Number(batch),
+		departmentRefId: department,
+	};
+	console.log(data);
 	try {
 		const student = await prisma.Student.create({
 			data: {
 				studentId: userId,
-				semesterRefId: semester.id,
+				semesterRefId: semester,
 				registrationNumber,
 				symbolNumber,
-				joinDate: new Date(joinDate),
-				departmentRefId: department.id,
+				batch: Number(batch),
+				departmentRefId: department,
 			},
 		});
 		return student;

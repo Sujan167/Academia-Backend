@@ -5,10 +5,9 @@
 	"main": "app.js",
 	"dependencies": {
 		"@prisma/client": "^5.4.2",
+		"amqplib": "^0.10.3",
 		"axios": "^1.6.7",
 		"bcrypt": "^5.1.1",
-		"bull": "^4.12.2",
-		"bullmq": "^5.1.4",
 		"cheerio": "^1.0.0-rc.12",
 		"child-process": "^1.0.2",
 		"cloudinary": "^1.41.0",
@@ -37,6 +36,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "NODE_ENV=development nodemon app.js",
+		"dev:worker": "NODE_ENV=development nodemon worker.js",
 		"start": "NODE_ENV=production node app.js"
 	},
 	"repository": {

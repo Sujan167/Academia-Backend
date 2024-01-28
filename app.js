@@ -16,11 +16,12 @@ const authenticate = require("./src/middlewares/authenticate");
 const ErrorHandler = require("./src/errors/ErrorHandler");
 const cacheMiddleware = require("./src/middlewares/cache.middleware");
 const checkRole = require("./src/middlewares/checkRole.middleware");
-// const { Queue } = require("bullmq");
-const axios = require("axios"); // Install axios with npm install axios
+
+const axios = require("axios");
+// const Producer = require("./src/utils/queueProducer");
 
 const app = express();
-
+// const producer = new Producer();
 // ======================================================
 
 app.use(express.json({ limit: "64kb" }));
@@ -58,32 +59,12 @@ app.use("/api/v1/auth", require("./src/routes/auth.route"));
 // ----------------------------------------------------------------
 // This requrest will be handled by another service -> GoLang
 
-app.use("/api/v1/compile", require("./src/routes/compiler.route"));
+// app.use("/api/v1/compile", require("./src/routes/compiler.route"));
+app.use("/api/v1/compile", async (req, res) => {
+	// await producer.publishMessage("codeCompile", req.body);
+	res.json({ status: true, message: "Item is queued" });
+});
 
-// Function to make an asynchronous request to Service 2
-
-// const requestService2 = async (data) => {
-// 	const service2Url = "http://localhost:3002/api/v1/compile";
-
-// 	try {
-// 		const response = await axios.post(service2Url, {
-			
-// 			body: JSON.stringify(data),
-// 		});
-// 		return response.data;
-// 	} catch (error) {
-// 		console.error("Error calling Service 2:", error.message);
-// 		throw error;
-// 	}
-// };
-// app.post("/api/v1/compile", async (req, res) => {
-// 	try {
-// 		const service2Result = await requestService2(req.body);
-// 		res.send(`Redirected! Service 2 response: ${service2Result}`);
-// 	} catch (error) {
-// 		res.status(500).send("Internal Server Error");
-// 	}
-// });
 // ----------------------------------------------------------------
 
 app.use("/api/v1/user", cacheMiddleware, require("./src/routes/user.route"));
@@ -92,6 +73,8 @@ app.use("/api/v1/subject", cacheMiddleware, require("./src/routes/subject.route"
 app.use(authenticate); // need credintials for all the route below
 
 // -----------------------------------------------------------------------------
+app.use("/api/v1/dashboard", cacheMiddleware, require("./src/routes/dashboard.route"));
+app.use("/api/v1/notification", cacheMiddleware, require("./src/routes/dashboard.route"));
 app.use("/api/v1/dashboard", cacheMiddleware, require("./src/routes/dashboard.route"));
 // -----------------------------------------------------------------------------
 

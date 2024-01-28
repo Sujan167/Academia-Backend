@@ -7,3 +7,7 @@ for post request, first update the cache and then insert into database because i
 
 QUEUE on non critical task like email
 on email service, implement queue service. email will be send later by consuming queue
+
+email-quque
+notification-queue
+codeCompile-queue -> different service

@@ -7,7 +7,7 @@ const customSelect = {
 	gender: true,
 	dateOfBirth: true,
 	phoneNumber: true,
-	isVerified: true,
-	isSuspended: true,
+	verified: true,
+	suspended: true,
 };
 module.exports = { customSelect };

@@ -147,10 +147,10 @@ const login = asyncHandler(async (req, res) => {
 		// select: customSelect, //don't do this otherwise it won't have password to compare
 	});
 
-	if (!user.isVerified) {
+	if (!user.verified) {
 		return res.status(403).json({ success: false, message: "You are not verified yet | please wait until admin verify you" });
 	}
-	if (user.isSuspended) {
+	if (user.suspended) {
 		return res.status(403).json({ success: false, message: "Access Denied. User is suspeneded" });
 	}
 
@@ -193,8 +193,7 @@ const login = asyncHandler(async (req, res) => {
 const registration = asyncHandler(async (req, res) => {
 	const userData = req.body;
 	const { name, phoneNumber, email, role, dateOfBirth, address, gender, joinDate } = userData;
-
-	if ([name, phoneNumber, email, role, dateOfBirth, address, gender, joinDate].some((field) => field?.trim === "")) {
+	if ([name, phoneNumber, email, role, dateOfBirth, address, gender].some((field) => field?.trim === "")) {
 		throw new ApiError(400, "All fields are required");
 	}
 	const isUserExist = await prisma.User.findUnique({
@@ -208,20 +207,24 @@ const registration = asyncHandler(async (req, res) => {
 	const lastName = uName[uName.length - 1];
 
 	const joiningYear = new Date(joinDate).getFullYear();
-	const username = `${firstName}${lastName}${joiningYear}@${role.toLowerCase()}.ambition.edu.np`;
+	if (role.toUpperCase() === "STUDENT") {
+		var username = `${firstName}${lastName}${userData.batch}@${role.toLowerCase()}.ambition.edu.np`;
+	} else {
+		var username = `${firstName}${lastName}${joiningYear}@${role.toLowerCase()}.ambition.edu.np`;
+	}
 
 	// Hash the password before saving it to the database
 	if (email === SUPER_USER_EMAIL) {
 		var password = "password@123";
-		var isVerified = true;
-		var isSuspended = false;
+		var verified = true;
+		var suspended = false;
 	} else {
 		var password = await generateReferenceCode(12);
 	}
 	console.log(`\nPassoword:: ${password}\n`);
 	const hashedPass = await hashedPassword(password);
 
-	const userDataToCreate = { username, name, email, password: hashedPass, dateOfBirth: new Date(dateOfBirth), phoneNumber, address, gender, role: role.toUpperCase(), isVerified: isVerified ? true : false, isSuspended: isSuspended ? true : false };
+	const userDataToCreate = { username, name, email, password: hashedPass, dateOfBirth: new Date(dateOfBirth), phoneNumber, address, gender, role: role.toUpperCase(), verified: verified ? true : false, suspended: suspended ? true : false };
 
 	// Create the user based on the role
 	const newUser = await prisma.User.create({

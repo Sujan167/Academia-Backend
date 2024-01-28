@@ -1,5 +1,5 @@
 const asyncHandler = require("express-async-handler");
-const { generateReferenceCode, sendEmail, prisma, customSelect, emailQueue } = require("../utils");
+const { generateReferenceCode, sendEmail, prisma, customSelect, produceToQueue } = require("../utils");
 const { SUPER_USER_EMAIL, REDIS_TTL } = process.env;
 
 // ===================================================================
@@ -52,17 +52,18 @@ const verifyNewRegistration = asyncHandler(async (req, res) => {
 
 	const user = await prisma.User.update({
 		where: { id },
-		data: { isVerified: true, referenceKey },
+		data: { verified: true, referenceKey },
 		select: customSelect,
 	});
 	console.log(user);
 	const data = { referenceKey, user };
 	const finalReply = { success: true, message: "New User Verified", data: data };
-	// await sendEmail("Reference Key", referenceKey, user.email);
 	console.log(referenceKey);
-	emailQueue.add("emailQueue", data).then(() => {
-		return res.status(200).json(finalReply);
-	});
+
+	const messageForQueue = { subject: "Reference Key", text: referenceKey, mailTo: user.email };
+	await produceToQueue("email_queue", JSON.stringify(messageForQueue));
+
+	return res.status(200).json(finalReply);
 });
 
 // -------------------------------------------------------------------
@@ -81,10 +82,12 @@ const suspendUser = asyncHandler(async (req, res) => {
 	}
 	const user = await prisma.User.update({
 		where: { id },
-		data: { isSuspended: true },
+		data: { suspended: true },
 		select: customSelect,
 	});
-	await sendEmail("Suspended", "You are suspended from the system", user.email);
+	const messageForQueue = { subject: "Suspended", text: "You are suspended from the system", mailTo: user.email };
+	await produceToQueue("email_queue", JSON.stringify(messageForQueue));
+
 	return res.status(200).json({ success: true, message: "User Suspended", data: user });
 });
 // PUT /api/admin/unsuspend-user
@@ -96,15 +99,18 @@ const unSuspendUser = asyncHandler(async (req, res) => {
 	const _user = await prisma.User.findFirst({
 		where: { id },
 	});
-	if (_user.isSuspended === false) {
+	if (_user.suspended === false) {
 		return res.json({ success: false, message: "User is not suspended." });
 	}
 	const user = await prisma.User.update({
 		where: { id },
-		data: { isSuspended: false },
+		data: { suspended: false },
 		select: customSelect,
 	});
-	await sendEmail("Suspension Canceled", "Welcome! Your suspension from the system is canceled.", user.email);
+
+	const messageForQueue = { subject: "Suspension Canceled", text: "Welcome! Your suspension from the system is canceled.", mailTo: user.email };
+	await produceToQueue("email_queue", JSON.stringify(messageForQueue));
+
 	return res.status(200).json({ success: true, message: "User Suspension canceled", data: user });
 });
 

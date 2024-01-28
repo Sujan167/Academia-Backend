@@ -29,8 +29,8 @@ model User {
   dateOfBirth  DateTime
   refreshToken String?
   referenceKey String?
-  isVerified   Boolean      @default(false)
-  isSuspended  Boolean      @default(true)
+  verified     Boolean      @default(false)
+  suspended    Boolean      @default(true)
   avatarURL    String?
   Student      Student?
   Staff        Staff?
@@ -111,13 +111,13 @@ model StudentSubject {
 //  Student(id,semesterRefId,registratinoNumber,symbolNumber,subjectRefId,joinDate,departmentRefId)
 model Student {
   studentId          String           @id @unique
-  // user               User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user               User             @relation(fields: [studentId], references: [id])
+  user               User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  // user               User             @relation(fields: [studentId], references: [id])
   semester           Semester         @relation(fields: [semesterRefId], references: [id])
   semesterRefId      Int              @default(0)
   registrationNumber String?
   symbolNumber       String?
-  joinDate           DateTime
+  batch              Int
   departmentRefId    Int
   department         Department       @relation(fields: [departmentRefId], references: [id])
   StudentSubject     StudentSubject[]
@@ -130,8 +130,8 @@ model Student {
 // Staff(id, subjectRefId,joinDate)
 model Staff {
   staffId String    @id @unique
-  // user    User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  user    User      @relation(fields: [staffId], references: [id])
+  user    User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  // user    User      @relation(fields: [staffId], references: [id])
   // joinDate DateTime
   Subject Subject[]
 

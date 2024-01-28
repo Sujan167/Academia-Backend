@@ -11,16 +11,17 @@ const transporter = nodemailer.createTransport({
 
 // ==============================================
 // Function to send an email
-const sendEmail = async (subject, text, mailTo) => {
+const sendEmail = async (emailContent) => {
+	
 	const mailOptions = {
 		from: NODEMAILER_USER,
-		to: mailTo,
-		subject,
-		text,
+		to: emailContent.mailTo,
+		subject: emailContent.subject,
+		text: emailContent.text,
 	};
-	
+
 	// -------------------------------------------------------------------
-	
+
 	await transporter.sendMail(mailOptions, (error, info) => {
 		if (error) {
 			console.error(error);
